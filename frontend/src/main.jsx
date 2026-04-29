@@ -27,6 +27,12 @@ function severityClass(severity) {
   return `severity ${severity.toLowerCase()}`;
 }
 
+function formatErrorMsg(detail, fallback) {
+  if (typeof detail === 'string') return detail;
+  if (Array.isArray(detail)) return detail.map((e) => `${e.loc?.slice(-1)}: ${e.msg}`).join('; ');
+  return fallback;
+}
+
 function App() {
   const [incidents, setIncidents] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
@@ -182,7 +188,7 @@ function StatusControls({ incident, onDone, setError }) {
     });
     if (!response.ok) {
       const body = await response.json();
-      setError(body.detail || 'Status update failed');
+      setError(formatErrorMsg(body.detail, 'Status update failed'));
       return;
     }
     onDone();
@@ -265,7 +271,7 @@ function RcaForm({ incident, existing, onDone, setError }) {
     });
     if (!response.ok) {
       const body = await response.json();
-      setError(body.detail || 'RCA submission failed');
+      setError(formatErrorMsg(body.detail, 'RCA submission failed'));
       return;
     }
     onDone();
