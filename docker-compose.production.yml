@@ -1,0 +1,53 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ims-data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - IMS_API_KEY=${IMS_API_KEY:-change-me}
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:7.4-alpine
+    restart: always
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v3.0.1
+    restart: always
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./ops/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - backend
+
+volumes:
+  ims-data:
+  redis-data:

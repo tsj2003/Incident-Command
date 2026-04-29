@@ -1,0 +1,26 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ims-data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+      - IMS_API_KEY=dev-secret
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE=http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  ims-data:

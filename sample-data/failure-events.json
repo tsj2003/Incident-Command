@@ -1,0 +1,27 @@
+[
+  {
+    "component_id": "RDBMS_PRIMARY_01",
+    "component_type": "RDBMS",
+    "service": "orders-platform",
+    "error_code": "CONNECTION_TIMEOUT",
+    "message": "Primary database connection pool exhausted",
+    "latency_ms": 4500,
+    "payload": {
+      "region": "ap-south-1",
+      "connection_pool": "orders-writer",
+      "open_connections": 512
+    }
+  },
+  {
+    "component_id": "MCP_HOST_EAST_02",
+    "component_type": "MCP_HOST",
+    "service": "agent-runtime",
+    "error_code": "HOST_UNREACHABLE",
+    "message": "MCP host stopped responding to heartbeat probes",
+    "latency_ms": 1200,
+    "payload": {
+      "region": "ap-south-1",
+      "heartbeat_misses": 7
+    }
+  }
+]
