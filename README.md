@@ -17,19 +17,7 @@ https://github.com/tsj2003/Incident-Command
 
 ## Architecture
 
-Add the architecture image here:
-
-```text
-docs/assets/ims-architecture.png
-```
-
-Markdown reference once the image is added:
-
-```md
-![IMS Architecture](docs/assets/ims-architecture.png)
-```
-
-![IMS Architecture](docs/assets/ims-architecture.png)
+![IMS Architecture](docs/assets/imp.png)
 
 The main flow is:
 
@@ -210,6 +198,16 @@ The backend also prints a pulse report every 5 seconds:
 ```text
 [IMS PULSE] TPS: {x} | Queue: {y}/25000 | Batched: {z} | Dropped: {w}
 ```
+
+## Bonus Points / Non-Functional Enhancements
+
+I explicitly implemented several non-functional resilience and security features to ensure this service is production-ready:
+
+1. **Security Layer (API Key Auth)**: The ingestion pipeline (`/signals` and `/signals/bulk`) is guarded by an API Key middleware. Unauthenticated requests are dropped instantly (`401 Unauthorized`) before reaching the async queue.
+2. **Signal Sanitization (PII/Secret Scrubbing)**: Before raw payloads are written to the JSONL data lake, a scrubbing layer automatically uses Regex to redact internal IPs (e.g., `10.x.x.x`), bearer tokens, and sensitive keys (`[REDACTED]`).
+3. **API Rate Limiting**: Implemented a `FixedWindowRateLimiter` limiting clients to 5,000 requests per minute per IP to prevent abusive payload bursts and cascading failures (`429 Too Many Requests`).
+4. **Performance (Debouncing & Bulk Admission)**: The system handles thousands of signals a second without memory exhaustion. We use atomic checking for bulk ingest capacity, and we debounce signals matching the same `component_id` within a 10s window to prevent duplicate incident noise.
+5. **Database Resilience**: SQLite writes use a custom `@retry_on_failure` decorator that implements exponential backoff to recover gracefully from WAL mode lock contention under heavy concurrency.
 
 ## Fast Reviewer Run
 
